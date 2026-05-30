@@ -164,13 +164,13 @@
   <input type="text" id="dummyInput">
 
   <div id="videoContainer">
-    <video id="myVideo" controls muted playsinline>
+    <video id="myVideo" controls playsinline>
       <source src="" type="video/mp4">
     </video>
   </div>
 
   <div id="instagramLink">
-    <a href="https://www.instagram.com/jori.3xe" target="_blank">
+    <a href="https://www.instagram.com/jori.3xe?igsh=dnFmMzE2ZWl1Y21s" target="_blank">
       <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" alt="Instagram">
     </a>
   </div>
@@ -242,7 +242,14 @@
         video.src = level.video;
         video.load();
         videoContainer.style.display = 'block';
-        video.play().catch(function() {});
+
+        video.muted = true;
+        video.play().then(function() {
+          setTimeout(function() {
+            video.muted = false;
+          }, 500);
+        }).catch(function() {});
+
         gameUI.style.display = 'none';
         instagramLink.style.display = 'block';
         moreGameBtn.style.display = 'block';
