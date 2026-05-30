@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000000;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    #gameUI {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    
+    h1 { font-size: 24px; margin-bottom: 10px; color: white; }
+    .level-info { font-size: 16px; color: #888; margin-bottom: 5px; }
+    .hint { font-size: 14px; opacity: 0.7; margin-bottom: 20px; }
+    
+    #wordInput {
+      width: 80%;
+      max-width: 300px;
+      padding: 15px;
+      font-size: 24px;
+      text-align: center;
+      background: #1a1a1a;
+      border: 2px solid #444;
+      border-radius: 12px;
+      color: white;
+      outline: none;
+      letter-spacing: 5px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .action-buttons button {
+      background: #333;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #111;
+    }
+    
+    .message { margin-top: 10px; font-size: 16px; min-height: 25px; }
+    
+    #videoContainer {
+      display: none;
+      width: 100%;
+      max-width: 400px;
+      margin-top: 15px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 30px #444;
+    }
+    video {
+      width: 100%;
+      display: block;
+    }
+    
+    #dummyInput {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+    
+    /* ===== INSTAGRAM LOGO (ilalagay sa baba) ===== */
+    #instagramLink {
+      display: none;
+      margin-top: 30px;
+      text-align: center;
+    }
+    #instagramLink img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+    #instagramLink img:active {
+      transform: scale(0.9);
+    }
+    
+    /* ===== MORE SPELL GAME BUTTON (black design) ===== */
+    #moreGameBtn {
+      display: none;
+      margin-top: 50px;
+      background: #111;
+      border: 2px solid #555;
+      border-radius: 30px;
+      padding: 12px 50px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #000;
+      transition: 0.2s;
+      letter-spacing: 2px;
+    }
+    #moreGameBtn:hover {
+      background: #222;
+      border-color: #888;
+    }
+    #moreGameBtn:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="gameUI">
+    <h1>📝 SPELLING GAME</h1>
+    <div id="levelInfo" class="level-info">Level 1/1</div>
+    <div class="hint">Spell: <strong id="targetWord">what if</strong></div>
+    <input type="text" id="wordInput" placeholder="Type here..." autofocus>
+    <div class="action-buttons">
+      <button onclick="clearWord()">🗑️ Clear</button>
+      <button onclick="checkWord()">✅ Check</button>
+    </div>
+    <div id="message" class="message"></div>
+  </div>
+
+  <input type="text" id="dummyInput">
+
+  <div id="videoContainer">
+    <video id="myVideo" controls>
+      <source src="" type="video/mp4">
+      Your browser does not support video.
+    </video>
+  </div>
+
+  <!-- ===== INSTAGRAM LOGO (baba) ===== -->
+  <div id="instagramLink">
+    <a href="https://www.instagram.com/jori.3xe?igsh=dnFmMzE2ZWl1Y21s" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" alt="Instagram">
+    </a>
+  </div>
+
+  <!-- ===== MORE SPELL GAME BUTTON (black) ===== -->
+  <button id="moreGameBtn" onclick="resetGame()">MORE</button>
+
+  <script>
+    // ===== LEVELS CONFIGURATION =====
+    const levelSets = [
+      {
+        levels: [
+          { word: "what if", video: "whatif.mp4" }
+        ]
+      },
+      {
+        levels: [
+          { word: "matutulog", video: "matulog.mp4" }
+        ]
+      }
+    ];
+
+    let currentSetIndex = 0;
+    let currentLevel = 0;
+
+    const gameUI = document.getElementById('gameUI');
+    const wordInput = document.getElementById('wordInput');
+    const dummyInput = document.getElementById('dummyInput');
+    const targetWord = document.getElementById('targetWord');
+    const levelInfo = document.getElementById('levelInfo');
+    const videoContainer = document.getElementById('videoContainer');
+    const video = document.getElementById('myVideo');
+    const message = document.getElementById('message');
+    const instagramLink = document.getElementById('instagramLink');
+    const moreGameBtn = document.getElementById('moreGameBtn');
+
+    function updateLevel() {
+      const set = levelSets[currentSetIndex];
+      const level = set.levels[currentLevel];
+      targetWord.textContent = level.word;
+      levelInfo.textContent = `Level ${currentLevel + 1}/${set.levels.length}`;
+      message.textContent = "";
+      wordInput.value = "";
+      gameUI.style.display = "flex";
+      videoContainer.style.display = "none";
+      instagramLink.style.display = "none";
+      moreGameBtn.style.display = "none";
+      video.pause();
+      wordInput.focus();
+    }
+
+    function clearWord() {
+      wordInput.value = "";
+      message.textContent = "";
+      videoContainer.style.display = "none";
+      instagramLink.style.display = "none";
+      moreGameBtn.style.display = "none";
+      video.pause();
+      gameUI.style.display = "flex";
+      wordInput.focus();
+    }
+
+    function checkWord() {
+      const set = levelSets[currentSetIndex];
+      const level = set.levels[currentLevel];
+      const input = wordInput.value.trim().toLowerCase();
+
+      if (input === level.word) {
+        message.textContent = "🎉 TAMA! Video lalabas!";
+        message.style.color = "#88ffaa";
+        video.src = level.video;
+        videoContainer.style.display = "block";
+        video.play();
+        gameUI.style.display = "none";
+        instagramLink.style.display = "block";
+        moreGameBtn.style.display = "block";
+        dummyInput.focus();
+        dummyInput.blur();
+      } else {
+        message.textContent = "❌ Mali, try again";
+        message.style.color = "#ff8888";
+        videoContainer.style.display = "none";
+        instagramLink.style.display = "none";
+        moreGameBtn.style.display = "none";
+        video.pause();
+      }
+    }
+
+    function resetGame() {
+      currentSetIndex = (currentSetIndex + 1) % levelSets.length;
+      currentLevel = 0;
+      video.src = "";
+      updateLevel();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkWord();
+    });
+
+    updateLevel();
+  </script>
+</body>
+</html>
