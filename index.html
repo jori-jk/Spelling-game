@@ -245,9 +245,7 @@
 
         video.muted = true;
         video.play().then(function() {
-          setTimeout(function() {
-            video.muted = false;
-          }, 500);
+          video.muted = false;
         }).catch(function() {});
 
         gameUI.style.display = 'none';
